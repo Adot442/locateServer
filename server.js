@@ -19,23 +19,6 @@ const client = new MongoClient(url, {
 const app = express();
 const PORT = 3000;
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    const database = client.db("sample_mflix");
-    const commentsCollection = database.collection("comments")
-    const sampleComment = await commentsCollection.findOne();
-    console.log("Sample Comment:", sampleComment);
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
 
 app.get("/load-comments", async (req, res) => {
   try {
@@ -81,7 +64,7 @@ app.get("/load-movie", async (req, res) => {
     const database = client.db("sample_mflix");
 
     // Access the comments collection
-    const movieCollection = database.collection("movies")
+    const movieCollection = database.collection("embedded_movies")
     const sampleMovie = await movieCollection.findOne();
     console.log("Sample movie:", sampleMovie.title);
 
@@ -101,6 +84,31 @@ app.get("/load-movie", async (req, res) => {
     await client.close();
   }
 });
+
+app.post("/post-driver", async (req, res) => {
+  // Connect the client to the server
+  try {
+    await client.connect();
+
+    // Access the sample_mflix database
+    const database = client.db("driverLoc");
+    const driverCollection = database.collection("driver");
+    const driver = {"number" : 3,
+                    "name" : "Sam", 
+                    "time" : "1:05", 
+                    "coordinates" : [12,5]};
+    driverCollection.insertOne(driver);
+
+    res.status(200).json({message: "Successful upload"});
+  } catch (error) {
+    console.error("Error inserting driver in Mongo");
+    res.status(500).json({ message: "Error inserting data"});
+  } finally {
+    await client.close();
+  }
+});
+
+
 
 
 app.get("/", (req, res) => {
