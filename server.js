@@ -134,6 +134,54 @@ app.delete("/driver-delete", async (req, res) => {
   }
 });
 
+const ensureCollectionExists = async () => {
+  try {
+    await client.connect();
+    const database = client.db("driverLoc"); // Replace with your database name
+    
+    // Check if the "drivers" collection already exists
+    const collections = await database.listCollections({ name: "driver" }).toArray();
+
+    if (collections.length > 0) {
+      console.log('The "drivers" collection already exists.');
+    } else {
+      // Create the collection
+      await database.createCollection("drivers");
+      console.log('The "drivers" collection has been created.');
+    }
+  } catch (error) {
+    console.error("Error ensuring collection exists:", error);
+  } finally {
+    await client.close();
+  }
+};
+
+await ensureCollectionExists();
+
+const deleteCollectionIfExists = async () => {
+  try {
+    await client.connect();
+    const database = client.db("driverLoc"); // Replace with your database name
+    
+    // Check if the "drivers" collection exists
+    const na = "driver2"
+    const collections = await database.listCollections({ name: na }).toArray();
+
+    if (collections.length > 0) {
+      // Delete the collection
+      await database.collection(na).drop();
+      console.log('The "drivers" collection has been deleted.');
+    } else {
+      console.log('The "drivers" collection does not exist.');
+    }
+  } catch (error) {
+    console.error("Error deleting collection:", error);
+  } finally {
+    await client.close();
+  }
+};
+
+//await deleteCollectionIfExists();
 
 app.get("/", (req, res) => {
   res.send("Hello from Express!");
