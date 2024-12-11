@@ -85,7 +85,7 @@ app.get("/load-movie", async (req, res) => {
   }
 });
 
-app.post("/post-driver", async (req, res) => {
+app.get("/post-driver", async (req, res) => {
   // Connect the client to the server
   try {
     await client.connect();
@@ -109,6 +109,30 @@ app.post("/post-driver", async (req, res) => {
 });
 
 
+app.delete("/driver-delete", async (req, res) => {
+  try {
+    await client.connect();
+    const database = client.db("driverLoc");
+    const driverCollection = database.collection("driver");
+
+    const result = await driverCollection.deleteOne({ name: "Sam" });
+
+    if (result.deletedCount === 0) {
+      res.status(404).send('Document not found');
+    } else {
+      res.status(200).send('Document deleted successfully');
+    }
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    res.status(500).json({ message: "Error deleting document" });
+  } finally {
+    try {
+      await client.close();
+    } catch (closeError) {
+      console.error("Error closing database connection:", closeError);
+    }
+  }
+});
 
 
 app.get("/", (req, res) => {
